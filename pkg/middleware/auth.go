@@ -10,13 +10,11 @@ import (
 )
 
 type AuthMiddleware struct {
-	next      http.Handler
 	sdkClient cohesiveMarketplaceSDK.Client
 }
 
 func (mw *AuthMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
-		mw.next.ServeHTTP(w, r)
 		return
 	}
 
@@ -35,10 +33,8 @@ func (mw *AuthMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r = r.WithContext(context.WithValue(r.Context(), authentication.AuthDetails{}, authDetails))
-
-	mw.next.ServeHTTP(w, r)
 }
 
-func NewAuthMiddleware(next http.Handler, client cohesiveMarketplaceSDK.Client) *AuthMiddleware {
-	return &AuthMiddleware{next: next, sdkClient: client}
+func NewAuthMiddleware(client cohesiveMarketplaceSDK.Client) *AuthMiddleware {
+	return &AuthMiddleware{sdkClient: client}
 }
