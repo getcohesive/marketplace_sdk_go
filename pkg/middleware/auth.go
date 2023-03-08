@@ -10,31 +10,63 @@ import (
 )
 
 type AuthMiddleware struct {
-	sdkClient cohesiveMarketplaceSDK.Client
+	sdkClient    cohesiveMarketplaceSDK.Client
+	blockRequest bool
 }
 
-func (mw *AuthMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (authMiddleware *AuthMiddleware) ParseAuthHeader(r *http.Request) (*authentication.AuthDetails, error) {
 	if r.Method == http.MethodOptions {
-		return
+		return nil, nil
 	}
-
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
-		http.Error(w, authentication.AuthError("auth header empty").Error(), http.StatusUnauthorized)
-		return
+		return nil, authentication.AuthError("auth header empty")
 	}
 
 	token := strings.Replace(authHeader, "Bearer ", "", 1)
 
-	authDetails, err := mw.sdkClient.ValidateToken(token)
+	authDetails, err := authMiddleware.sdkClient.ValidateToken(token)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
+		return nil, authentication.AuthError("auth header validation failed" + err.Error())
 	}
-
-	r = r.WithContext(context.WithValue(r.Context(), authentication.AuthDetails{}, authDetails))
+	return authDetails, nil
 }
 
-func NewAuthMiddleware(client cohesiveMarketplaceSDK.Client) *AuthMiddleware {
-	return &AuthMiddleware{sdkClient: client}
+func (authMiddleware *AuthMiddleware) HandlerFunc() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		if r.Method == http.MethodOptions {
+			return
+		}
+
+		authDetails, err := authMiddleware.ParseAuthHeader(r)
+		if err != nil && authMiddleware.blockRequest {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		r = r.WithContext(context.WithValue(r.Context(), authentication.AuthDetails{}, authDetails))
+	}
+}
+
+func (authMiddleware *AuthMiddleware) HandlerFuncWithNext(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		if r.Method == http.MethodOptions {
+			return
+		}
+
+		authDetails, err := authMiddleware.ParseAuthHeader(r)
+		if err != nil && authMiddleware.blockRequest {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		r = r.WithContext(context.WithValue(r.Context(), authentication.AuthDetails{}, authDetails))
+		next.ServeHTTP(w, r)
+	}
+}
+
+func NewAuthMiddleware(client cohesiveMarketplaceSDK.Client, blockRequest bool) *AuthMiddleware {
+	return &AuthMiddleware{sdkClient: client, blockRequest: blockRequest}
 }
