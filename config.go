@@ -3,13 +3,13 @@ package cohesive_marketplace_sdk
 import (
 	"errors"
 
-	"github.com/getcohesive/marketplace_sdk_go/cohesive_marketplace_sdk/pkg/request"
+	"github.com/getcohesive/marketplace_sdk_go/pkg/request"
 )
 
 type Config struct {
 	request.Config
-	CohesiveAppSecret  string
-	CohesiveAppID      string
+	CohesiveAppSecret string
+	CohesiveAppID     string
 }
 
 func (c *Config) Validate() error {
@@ -22,7 +22,7 @@ func (c *Config) Validate() error {
 	if c.CohesiveAppID == "" {
 		return errors.New("empty app ID")
 	}
-	if err := c.Config.Validate(); err != nil{
+	if err := c.Config.Validate(); err != nil {
 		return err
 	}
 	return nil

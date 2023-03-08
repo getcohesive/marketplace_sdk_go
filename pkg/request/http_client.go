@@ -3,29 +3,28 @@ package request
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/getcohesive/marketplace_sdk_go/pkg/common/errors"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
-
 )
 
-type Config struct{
-	CohesiveBaseURL *url.URL
-	CohesiveApiKey string
+type Config struct {
+	CohesiveBaseURL    *url.URL
+	CohesiveApiKey     string
 	CohesiveApiTimeout time.Duration
 }
 
 func (c Config) Validate() error {
 	if c.CohesiveBaseURL == nil {
-		return errors.New("empty base URL")
+		return errors.CohesiveError{Message: "empty base URL"}
 	}
 	if c.CohesiveApiKey == "" {
-		return errors.New("empty API key")
+		return errors.CohesiveError{Message: "empty API key"}
 	}
-	if c.CohesiveApiTimeout == 0{
+	if c.CohesiveApiTimeout == 0 {
 		c.CohesiveApiTimeout = time.Second * 10
 	}
 	return nil
@@ -34,8 +33,9 @@ func (c Config) Validate() error {
 type HTTPClient interface {
 	Request(method string, path string, body interface{}) ([]byte, error)
 }
-func NewHTTPClient(config *Config) (HTTPClient, error){
-	if err := config.Validate(); err != nil{
+
+func NewHTTPClient(config *Config) (HTTPClient, error) {
+	if err := config.Validate(); err != nil {
 		return nil, err
 	}
 	return &httpClient{
@@ -43,8 +43,7 @@ func NewHTTPClient(config *Config) (HTTPClient, error){
 	}, nil
 }
 
-
-type httpClient struct{
+type httpClient struct {
 	config *Config
 }
 
@@ -55,8 +54,8 @@ func (c *httpClient) Request(method string, path string, body interface{}) ([]by
 	}
 	request := &http.Request{
 		Method: method,
-		URL: c.config.CohesiveBaseURL.ResolveReference(&url.URL{Path: "/report-usage"}),
-		Body: io.NopCloser(bytes.NewReader(requestBody)),
+		URL:    c.config.CohesiveBaseURL.ResolveReference(&url.URL{Path: path}),
+		Body:   io.NopCloser(bytes.NewReader(requestBody)),
 	}
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", "Bearer "+c.config.CohesiveApiKey)
@@ -65,14 +64,19 @@ func (c *httpClient) Request(method string, path string, body interface{}) ([]by
 	if err != nil {
 		return nil, APIConnectionError(err.Error())
 	}
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Printf("failed to close response body %e", err)
+		}
+	}(response.Body)
 	buf := new(bytes.Buffer)
 	_, err = buf.ReadFrom(response.Body)
-	if err != nil{
-		return nil, APIClientError("failed to read response"+err.Error())
+	if err != nil {
+		return nil, APIClientError("failed to read response" + err.Error())
 	}
 	if response.StatusCode >= 400 {
-		return nil, APIError(fmt.Sprintf("failed with code %d and response %s ", response.StatusCode,  buf.String()))
+		return nil, APIError(fmt.Sprintf("failed with code %d and response %s ", response.StatusCode, buf.String()))
 	}
 	return buf.Bytes(), nil
 }

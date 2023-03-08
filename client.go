@@ -1,17 +1,17 @@
 package cohesive_marketplace_sdk
 
 import (
-	"errors"
+	"github.com/getcohesive/marketplace_sdk_go/pkg/authentication"
+	"github.com/getcohesive/marketplace_sdk_go/pkg/common/errors"
 	"net/url"
 	"os"
 
-	"github.com/getcohesive/marketplace_sdk_go/cohesive_marketplace_sdk/pkg/auth"
-	"github.com/getcohesive/marketplace_sdk_go/cohesive_marketplace_sdk/pkg/request"
-	"github.com/getcohesive/marketplace_sdk_go/cohesive_marketplace_sdk/pkg/usage"
+	"github.com/getcohesive/marketplace_sdk_go/pkg/request"
+	"github.com/getcohesive/marketplace_sdk_go/pkg/usage"
 )
 
 type client struct {
-	config *Config
+	config     *Config
 	httpClient request.HTTPClient
 }
 
@@ -19,30 +19,30 @@ func (c *client) Usage() usage.Usage {
 	return usage.NewUsage(c.httpClient)
 }
 
-func (c *client) ValidateToken(token string) (*auth.AuthDetails, error) {
-	return auth.ValidateToken(token, c.config.CohesiveAppSecret)
+func (c *client) ValidateToken(token string) (*authentication.AuthDetails, error) {
+	return authentication.ValidateToken(token, c.config.CohesiveAppSecret)
 }
 
 type Client interface {
 	Usage() usage.Usage
-	ValidateToken(token string) (*auth.AuthDetails, error)
+	ValidateToken(token string) (*authentication.AuthDetails, error)
 }
 
 func NewClient(config *Config) (Client, error) {
 	if config == nil {
 		config = &Config{
 			Config: request.Config{
-				CohesiveApiKey:    os.Getenv("COHESIVE_API_KEY"),
+				CohesiveApiKey: os.Getenv("COHESIVE_API_KEY"),
 			},
 			CohesiveAppSecret: os.Getenv("COHESIVE_APP_SECRET"),
 			CohesiveAppID:     os.Getenv("COHESIVE_APP_ID"),
 		}
 		baseURL, err := url.Parse(os.Getenv("COHESIVE_BASE_URL"))
 		if err != nil {
-			return nil, errors.New("Bad COHESIVE_BASE_URL")
+			return nil, errors.CohesiveError{Message: "Bad COHESIVE_BASE_URL"}
 		}
 		config.CohesiveBaseURL = baseURL
-		if err := config.Validate(); err != nil{
+		if err := config.Validate(); err != nil {
 			return nil, err
 		}
 	}
@@ -51,7 +51,7 @@ func NewClient(config *Config) (Client, error) {
 		return nil, err
 	}
 	return &client{
-		config: config,
+		config:     config,
 		httpClient: httpClient,
 	}, nil
 }
