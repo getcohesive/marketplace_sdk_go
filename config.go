@@ -6,9 +6,9 @@ import (
 )
 
 type Config struct {
-	request.Config
-	CohesiveAppSecret string
-	CohesiveAppID     string
+	request.Config    `json:"HTTP" yaml:"HTTP" mapstructure:"HTTP"`
+	CohesiveAppSecret string `json:"COHESIVE_APP_SECRET" yaml:"COHESIVE_APP_SECRET" mapstructure:"COHESIVE_APP_SECRET"`
+	CohesiveAppID     string `json:"COHESIVE_APP_ID" yaml:"COHESIVE_APP_ID" mapstructure:"COHESIVE_APP_ID"`
 }
 
 func (c *Config) Validate() error {

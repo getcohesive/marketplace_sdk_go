@@ -12,9 +12,9 @@ import (
 )
 
 type Config struct {
-	CohesiveBaseURL    *url.URL
-	CohesiveApiKey     string
-	CohesiveApiTimeout time.Duration
+	CohesiveBaseURL    *url.URL      `json:"COHESIVE_BASE_URL" yaml:"COHESIVE_BASE_URL" mapstructure:"COHESIVE_BASE_URL"`
+	CohesiveApiKey     string        `json:"COHESIVE_API_KEY" yaml:"COHESIVE_API_KEY" mapstructure:"COHESIVE_API_KEY"`
+	CohesiveApiTimeout time.Duration `json:"COHESIVE_API_TIMEOUT" yaml:"COHESIVE_API_TIMEOUT" mapstructure:"COHESIVE_API_TIMEOUT"`
 }
 
 func (c Config) Validate() error {
