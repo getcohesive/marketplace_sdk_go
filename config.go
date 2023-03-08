@@ -1,8 +1,7 @@
 package cohesive_marketplace_sdk
 
 import (
-	"errors"
-
+	"github.com/getcohesive/marketplace_sdk_go/pkg/common/errors"
 	"github.com/getcohesive/marketplace_sdk_go/pkg/request"
 )
 
@@ -14,13 +13,13 @@ type Config struct {
 
 func (c *Config) Validate() error {
 	if c == nil {
-		return errors.New("empty config")
+		return errors.CohesiveError{Message: "empty config"}
 	}
 	if c.CohesiveAppSecret == "" {
-		return errors.New("empty app secret")
+		return errors.CohesiveError{Message: "empty app secret"}
 	}
 	if c.CohesiveAppID == "" {
-		return errors.New("empty app ID")
+		return errors.CohesiveError{Message: "empty app ID"}
 	}
 	if err := c.Config.Validate(); err != nil {
 		return err
