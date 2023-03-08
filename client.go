@@ -1,7 +1,6 @@
 package cohesive_marketplace_sdk
 
 import (
-	"fmt"
 	"github.com/getcohesive/marketplace_sdk_go/pkg/authentication"
 	"github.com/getcohesive/marketplace_sdk_go/pkg/common/errors"
 	"net/url"
@@ -51,7 +50,6 @@ func NewClient(config *Config) (Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(config)
 	return &client{
 		config:     config,
 		httpClient: httpClient,
