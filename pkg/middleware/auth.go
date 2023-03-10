@@ -10,8 +10,7 @@ import (
 )
 
 type AuthMiddleware struct {
-	sdkClient    cohesiveMarketplaceSDK.Client
-	blockRequest bool
+	sdkClient cohesiveMarketplaceSDK.Client
 }
 
 func (authMiddleware *AuthMiddleware) ParseAuthHeader(r *http.Request) (*authentication.AuthDetails, error) {
@@ -40,7 +39,7 @@ func (authMiddleware *AuthMiddleware) HandlerFunc() http.HandlerFunc {
 		}
 
 		authDetails, err := authMiddleware.ParseAuthHeader(r)
-		if err != nil && authMiddleware.blockRequest {
+		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
@@ -57,7 +56,7 @@ func (authMiddleware *AuthMiddleware) HandlerFuncWithNext(next http.HandlerFunc)
 		}
 
 		authDetails, err := authMiddleware.ParseAuthHeader(r)
-		if err != nil && authMiddleware.blockRequest {
+		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
@@ -68,5 +67,5 @@ func (authMiddleware *AuthMiddleware) HandlerFuncWithNext(next http.HandlerFunc)
 }
 
 func NewAuthMiddleware(client cohesiveMarketplaceSDK.Client, blockRequest bool) *AuthMiddleware {
-	return &AuthMiddleware{sdkClient: client, blockRequest: blockRequest}
+	return &AuthMiddleware{sdkClient: client}
 }

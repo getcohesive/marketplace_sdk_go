@@ -2,20 +2,26 @@ package authentication
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"github.com/getcohesive/marketplace_sdk_go/pkg/common/utils"
 )
 
 type AuthDetails struct {
-	UserID                 int
-	UserName               string
-	UserEmail              string
-	Role                   string
-	WorkspaceID            int
-	WorkspaceName          string
-	InstanceID             int
-	CurrentPeriodStartedAt string
-	CurrentPeriodEndsAt    string
-	IsInTrial              bool
-	TrialItemsCount        int
+	UserID                 *int
+	UserName               *string
+	UserEmail              *string
+	Role                   *string
+	WorkspaceID            *int
+	WorkspaceName          *string
+	InstanceID             *int
+	IsInTrial              *bool
+	CurrentPeriodStartedAt *string
+	CurrentPeriodEndsAt    *string
+	TrialItemsCount        *int
+	ItemsPerUnit           *int
+}
+
+func (authDetails AuthDetails) IsUserLoggedIn() bool {
+	return authDetails.UserID != nil
 }
 
 func ValidateToken(tokenString string, appSecret string) (*AuthDetails, error) {
@@ -30,27 +36,22 @@ func ValidateToken(tokenString string, appSecret string) (*AuthDetails, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return &AuthDetails{
-			UserID:                 claims["user_id"].(int),
-			UserName:               claims["user_name"].(string),
-			UserEmail:              claims["user_email"].(string),
-			Role:                   claims["role"].(string),
-			WorkspaceID:            claims["workspace_id"].(int),
-			WorkspaceName:          claims["workspace_name"].(string),
-			InstanceID:             claims["instance_id"].(int),
-			CurrentPeriodStartedAt: getStringFromInterface(claims["current_period_started_at"]),
-			CurrentPeriodEndsAt:    getStringFromInterface(claims["current_period_ends_at"]),
-			IsInTrial:              claims["is_in_trial"].(bool),
-			TrialItemsCount:        claims["trial_items_count"].(int),
-		}, nil
+		authDetails := &AuthDetails{}
+		authDetails.Role = utils.String(claims["role"])
+		authDetails.WorkspaceID = utils.Int(claims["workspace_id"])
+		authDetails.WorkspaceName = utils.String(claims["workspace_name"])
+		authDetails.InstanceID = utils.Int(claims["instance_id"])
+		authDetails.IsInTrial = utils.Bool(claims["is_in_trial"])
+		authDetails.UserID = utils.Int(claims["user_id"])
+		authDetails.UserEmail = utils.String(claims["user_name"])
+		authDetails.UserEmail = utils.String(claims["user_email"])
+		authDetails.CurrentPeriodStartedAt = utils.String(claims["current_period_started_at"])
+		authDetails.CurrentPeriodEndsAt = utils.String(claims["current_period_ends_at"])
+		authDetails.TrialItemsCount = utils.Int(claims["trial_items_count"])
+		authDetails.ItemsPerUnit = utils.Int(claims["items_per_unit"])
+
+		return authDetails, nil
 	} else {
 		return nil, AuthError("invalid token claims: " + token.Claims.Valid().Error())
 	}
-}
-
-func getStringFromInterface(val interface{}) string {
-	if val == nil {
-		return ""
-	}
-	return val.(string)
 }
