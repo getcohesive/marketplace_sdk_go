@@ -3,6 +3,7 @@ package cohesive_marketplace_sdk
 import (
 	"github.com/getcohesive/marketplace_sdk_go/pkg/authentication"
 	"github.com/getcohesive/marketplace_sdk_go/pkg/common/errors"
+	"github.com/getcohesive/marketplace_sdk_go/pkg/users"
 	"net/url"
 	"os"
 
@@ -17,6 +18,10 @@ type client struct {
 
 func (c *client) Usage() usage.Usage {
 	return usage.NewUsage(c.httpClient)
+}
+
+func (c *client) Users() users.Users {
+	return users.NewUsers(c.httpClient)
 }
 
 func (c *client) ValidateToken(token string) (*authentication.AuthDetails, error) {
