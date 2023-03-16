@@ -3,10 +3,9 @@ package users
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/getcohesive/marketplace_sdk_go/pkg/request"
 )
 
-type InstanceUsersParams struct {
+type ListInstanceUsersParams struct {
 	WorkspaceId int `json:"workspace_id"`
 	InstanceId  int `json:"instance_id"`
 }
@@ -22,22 +21,10 @@ type ListInstanceUsersResponse struct {
 	} `json:"users"`
 }
 
-type Users interface {
-	ListInstanceUsers(params InstanceUsersParams) (*ListInstanceUsersResponse, error)
-}
-
-func NewUsers(client request.HTTPClient) Users {
-	return &usersClient{client}
-}
-
-type usersClient struct {
-	client request.HTTPClient
-}
-
-func (u *usersClient) ListInstanceUsers(params InstanceUsersParams) (*ListInstanceUsersResponse, error) {
+func (u *usersClient) ListInstanceUsers(params ListInstanceUsersParams) (*ListInstanceUsersResponse, error) {
 	response, err := u.client.Request("POST", "/list-instance-users", params)
 	if err != nil {
-		fmt.Printf("Report Usage Failed : res = %s, err = %e", string(response), err)
+		fmt.Printf("List instance users failed : res = %s, err = %e", string(response), err)
 		return nil, err
 	}
 

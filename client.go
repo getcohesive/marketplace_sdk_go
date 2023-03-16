@@ -30,6 +30,7 @@ func (c *client) ValidateToken(token string) (*authentication.AuthDetails, error
 
 type Client interface {
 	Usage() usage.Usage
+	Users() users.Users
 	ValidateToken(token string) (*authentication.AuthDetails, error)
 }
 
