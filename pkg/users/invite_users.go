@@ -56,7 +56,7 @@ func (e ErrorCode) String() string {
 }
 
 func (u *usersClient) InviteUsers(params InviteUsersRequest) (*InviteUsersResponse, error) {
-	response, err := u.client.Request("POST", "/list-instance-users", params)
+	response, err := u.client.Request("POST", "/invite-users-to-instance", params)
 	if err != nil {
 		fmt.Printf("Invite users to instance failed : res = %s, err = %e", string(response), err)
 		return nil, err
