@@ -4,7 +4,7 @@ import "github.com/getcohesive/marketplace_sdk_go/pkg/request"
 
 type Users interface {
 	ListInstanceUsers(params ListInstanceUsersParams) (*ListInstanceUsersResponse, error)
-	InviteUsers(params InviteUsersRequest) (*InviteUsersResponse, error)
+	InviteUsers(params InviteUsersParams) (*InviteUsersResponse, error)
 }
 
 func NewUsers(client request.HTTPClient) Users {

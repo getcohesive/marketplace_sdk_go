@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-type InviteUsersRequest struct {
+type InviteUsersParams struct {
 	WorkspaceId   int      `json:"workspace_id"`
 	InstanceId    int      `json:"instance_id"`
 	UserId        int      `json:"user_id"`
@@ -55,7 +55,7 @@ func (e ErrorCode) String() string {
 	}
 }
 
-func (u *usersClient) InviteUsers(params InviteUsersRequest) (*InviteUsersResponse, error) {
+func (u *usersClient) InviteUsers(params InviteUsersParams) (*InviteUsersResponse, error) {
 	response, err := u.client.Request("POST", "/invite-users-to-instance", params)
 	if err != nil {
 		fmt.Printf("Invite users to instance failed : res = %s, err = %e", string(response), err)

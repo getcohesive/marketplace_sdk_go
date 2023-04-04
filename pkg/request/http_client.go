@@ -52,10 +52,9 @@ func (c *httpClient) Request(method string, path string, body interface{}) ([]by
 	if err != nil {
 		return nil, APIClientError(err.Error())
 	}
-	request := &http.Request{
-		Method: method,
-		URL:    c.config.CohesiveBaseURL.ResolveReference(&url.URL{Path: path}),
-		Body:   io.NopCloser(bytes.NewReader(requestBody)),
+	request, err := http.NewRequest(method, c.config.CohesiveBaseURL.ResolveReference(&url.URL{Path: path}).String(), io.NopCloser(bytes.NewReader(requestBody)))
+	if err != nil {
+		return nil, APIConnectionError(err.Error())
 	}
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", "Bearer "+c.config.CohesiveApiKey)
